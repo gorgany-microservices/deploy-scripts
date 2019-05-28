@@ -1,0 +1,31 @@
+version: '3'
+services:
+  configuration-server:
+    image: 'ojles.coursework/configuration-server:latest'
+    hostname: configuration-server
+    environment:
+      SERVER_PORT: 80
+      GIT_USERNAME: ${CONFIGSERVER_GIT_USERNAME}
+      GIT_PASSWORD: ${CONFIGSERVER_GIT_PASSWORD}
+    ports:
+      - '8081:80'
+  catalogue:
+    image: 'ojles.coursework/catalogue:latest'
+    depends_on:
+      - configuration-server
+      - db
+    environment:
+      WAIT_HOSTS: 'configuration-server:80,db:3306'
+      WAIT_SLEEP_INTERVAL: 5
+      CATALOGUE_PROFILE: default
+      CONFIGSERVER_URI: http://configuration-server:80
+  db:
+    image: mariadb:10.2
+    hostname: db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'deadl1ne'
+    ports:
+      - '3306:3306'
+    volumes:
+      - /var/lib/mysql:/var/lib/mysql
